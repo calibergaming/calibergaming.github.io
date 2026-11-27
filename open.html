@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Open in Caliber Gaming</title>
+<meta property="og:title" content="Open in Caliber Gaming">
+<meta property="og:description" content="Tap to open this in the Caliber Gaming app.">
+<meta property="og:image" content="og.png">
+<link rel="icon" href="logo.svg" type="image/svg+xml">
+<link rel="stylesheet" href="style.css">
+<style>
+  .btn { display:block; text-align:center; padding:14px 18px; border-radius:12px; font-weight:700; text-decoration:none; margin:12px 0; }
+  .primary { background:var(--primary); color:#fff; }
+  .ghost { border:1px solid var(--line); color:var(--text); }
+  #bad { display:none; }
+</style>
+</head>
+<body>
+<main>
+  <div class="brand">Caliber Gaming</div>
+  <div id="ok">
+    <h1>Opening Caliber Gaming…</h1>
+    <p class="sub">If the app doesn't open on its own, tap the button.</p>
+    <a id="open" class="btn primary" href="#">Open in the app</a>
+    <div class="card">
+      <b>Don't have the app yet?</b>
+      <p class="sub" style="margin:6px 0 0">Android only for now. Install it, then tap your link again.</p>
+      <a class="btn ghost" href="https://github.com/calibergaming/releases/releases/latest/download/caliber-latest.apk">Download for Android</a>
+    </div>
+  </div>
+  <div id="bad">
+    <h1>This link isn't complete</h1>
+    <p class="sub">Ask whoever shared it to send it again from the app.</p>
+  </div>
+</main>
+<script>
+// Links look like open.html?to=centre/<id>. Only these five screens, and only
+// a plain id, are ever opened - nothing from the URL is written into the page.
+(function () {
+  var params = new URLSearchParams(location.search);
+  var to = params.get('to') || '';
+  var noApp = params.get('noapp') === '1';
+  if (!/^(centre|tournament|player|coach|squad)\/[A-Za-z0-9-]{1,64}$/.test(to)) {
+    document.getElementById('ok').style.display = 'none';
+    document.getElementById('bad').style.display = 'block';
+    return;
+  }
+  var android = /Android/i.test(navigator.userAgent);
+  // Android: an intent link opens the installed app straight to the screen
+  // (WhatsApp's in-app browser and Chrome both honour it). Elsewhere: the
+  // app's own scheme, which Expo Router maps to the same route.
+  // Without a fallback, Android sends a missing app to the Play Store, where
+  // Caliber is not listed yet - so come back here with noapp=1 instead.
+  var back = location.origin + location.pathname + '?to=' + to + '&noapp=1';
+  var url = android
+    ? 'intent://' + to + '#Intent;scheme=calibergaming;package=com.calibergaming.app;S.browser_fallback_url=' + encodeURIComponent(back) + ';end'
+    : 'calibergaming://' + to;
+  document.getElementById('open').href = url;
+  if (noApp) {
+    document.querySelector('#ok h1').textContent = 'Get Caliber Gaming to open this';
+    document.querySelector('#ok .sub').textContent = "Caliber Gaming isn't installed on this phone yet.";
+    return;
+  }
+  setTimeout(function () { location.href = url; }, 150);
+})();
+</script>
+</body>
+</html>
